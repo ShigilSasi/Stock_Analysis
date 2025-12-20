@@ -48,6 +48,51 @@ with tab1:
     df_year = df[df['year'] == selected_year]
 
     # ---------------------------
+    # KPI CARDS
+    # ---------------------------
+    st.markdown("### 📌 Key Market Metrics")
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    # Total Stocks
+    total_stocks = df_year['Ticker'].nunique()
+    col1.metric("📈 Total Stocks", total_stocks)
+
+    # Average Daily Return
+    avg_daily_return = df_year['daily_return'].mean() * 100
+    col2.metric("📊 Avg Daily Return", f"{avg_daily_return:.2f}%")
+
+    # Best Performing Stock
+    best_stock = (
+        df_year.sort_values('date')
+        .groupby('Ticker')
+        .tail(1)
+        .sort_values('cumulative_return', ascending=False)
+        .iloc[0]
+    )
+    col3.metric(
+        "🚀 Best Stock",
+        best_stock['Ticker'],
+        f"{best_stock['cumulative_return']:.2f}%"
+    )
+
+    # Worst Performing Stock
+    worst_stock = (
+        df_year.sort_values('date')
+        .groupby('Ticker')
+        .tail(1)
+        .sort_values('cumulative_return')
+        .iloc[0]
+    )
+    col4.metric(
+        "📉 Worst Stock",
+        worst_stock['Ticker'],
+        f"{worst_stock['cumulative_return']:.2f}%"
+    )
+
+    st.divider()
+
+    # ---------------------------
     # 1️⃣ Volatility Analysis
     # ---------------------------
     st.subheader("1️⃣ Top 10 Most Volatile Stocks")
@@ -198,26 +243,22 @@ with tab2:
             'monthly_return_%'
         ).head(5)
 
-        # 🟢 Gainers
+        # Gainers (Green)
         fig.add_trace(
             go.Bar(
                 x=top_gainers['Ticker'],
                 y=top_gainers['monthly_return_%'],
-                text=top_gainers['monthly_return_%'].round(2),
-                textposition='outside',
                 marker_color='green'
             ),
             row=row,
             col=col
         )
 
-        # 🔴 Losers
+        # Losers (Red)
         fig.add_trace(
             go.Bar(
                 x=top_losers['Ticker'],
                 y=top_losers['monthly_return_%'],
-                text=top_losers['monthly_return_%'].round(2),
-                textposition='outside',
                 marker_color='red'
             ),
             row=row,
